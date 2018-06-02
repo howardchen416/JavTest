@@ -6,71 +6,59 @@ import java.util.regex.*;
 
 public class Solution {
 
-    private static class Track {
-        int start;
-        int end;
-
-        public Track(int start, int end) {
-            this.start = start;
-            this.end = end;
+    static int[] bfs(int n, int m, int[][] edges, int s) {
+        Queue<Integer> q = new LinkedList<>();
+        int[] dist = new int[n];
+        Arrays.fill(dist, -1);
+        dist[0] = 0;
+        boolean[] visited = new boolean[n];
+        Arrays.fill(visited, false);
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        for (int i = 0; i < edges.length; i++) {
+            if (!map.containsKey(edges[i][0]-1)) {
+                map.put(edges[i][0]-1, new ArrayList<>());
+                //map.put(edges[i][1], new ArrayList<>());
+            }
+            map.get(edges[i][0]-1).add(edges[i][1]-1);
+            if (!map.containsKey(edges[i][1]-1)) {
+                map.put(edges[i][1]-1, new ArrayList<>());
+                //map.put(edges[i][1], new ArrayList<>());
+            }
+            map.get(edges[i][1]-1).add(edges[i][0]-1);
         }
-    }
-
-    static long gridlandMetro(int n, int m, int k, int[][] track) {
-        long totalTrackLength = 0;
-        Map<Integer, List<Track>> map = new HashMap<>(); // not null means at least one track exist on that row (key)
-        for (int i = 0; i < k; i++) {
-            int r = track[i][0];
-            int s = track[i][1];
-            int e = track[i][2];
-            if (!map.containsKey(r)) {
-                List<Track> l = new ArrayList<>();
-                l.add(new Track(s, e));
-                map.put(r, l);
-            } else {
-                map.put(r, mergeInterval(map.get(r), new Track(s, e)));
+        q.offer(s-1);
+        while (!q.isEmpty()) {
+            Integer item = q.poll();
+            for (Integer node : map.get(item)) {
+                if (!visited[node]) {
+                    dist[node] = dist[item] + 6;
+                }
             }
         }
-        for (Map.Entry<Integer, List<Track>> me : map.entrySet()) {
-            for (Track t : me.getValue()) {
-                totalTrackLength += (t.end - t.start + 1);
-                if (t.end - t.start + 1 > m)
-                    System.out.println("");
-            }
-        }
-
-        return (long)n * (long)m - totalTrackLength;
-    }
-
-    static List<Track> mergeInterval(List<Track> orderedTracks, Track trackToMerge) {
-        int i = 0;
-        List<Track> r = new ArrayList<>();
-
-        while (i < orderedTracks.size() && trackToMerge.start > orderedTracks.get(i).end) r.add(orderedTracks.get(i++));
-        while (i < orderedTracks.size() && trackToMerge.end >= orderedTracks.get(i).start) {
-            trackToMerge = new Track(Math.min(trackToMerge.start, orderedTracks.get(i).start),
-                    Math.max(trackToMerge.end, orderedTracks.get(i).end));
-            i++;
-        }
-        r.add(trackToMerge);
-        r.addAll(orderedTracks.subList(i, orderedTracks.size()));
-
-        return r;
+        return dist;
     }
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
-        int n = in.nextInt();
-        int m = in.nextInt();
-        int k = in.nextInt();
-        int[][] track = new int[k][3];
-        for(int track_i = 0; track_i < k; track_i++){
-            for(int track_j = 0; track_j < 3; track_j++){
-                track[track_i][track_j] = in.nextInt();
+        int q = in.nextInt();
+        for(int a0 = 0; a0 < q; a0++){
+            int n = in.nextInt();
+            int m = in.nextInt();
+            int[][] edges = new int[m][2];
+            for(int edges_i = 0; edges_i < m; edges_i++){
+                for(int edges_j = 0; edges_j < 2; edges_j++){
+                    edges[edges_i][edges_j] = in.nextInt();
+                }
             }
+            int s = in.nextInt();
+            int[] result = bfs(n, m, edges, s);
+            for (int i = 1; i < result.length; i++) {
+                System.out.print(result[i] + (i != result.length - 1 ? " " : ""));
+            }
+            System.out.println("");
+
+
         }
-        long result = gridlandMetro(n, m, k, track);
-        System.out.println(result);
         in.close();
     }
 }
